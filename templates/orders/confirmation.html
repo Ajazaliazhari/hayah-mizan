@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+
+{% block title %}Order Confirmed - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto px-4 py-16 text-center">
+    <div class="w-20 h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-6">
+        <svg class="w-10 h-10 text-green-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+        </svg>
+    </div>
+    
+    <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-3">Thank You!</h1>
+    <p class="text-gray-600 mb-8">Your order has been placed successfully.</p>
+    
+    <div class="bg-gray-50 border border-gray-200 p-6 text-left mb-8">
+        <div class="grid grid-cols-2 gap-4 text-sm">
+            <div><span class="text-gray-500">Order Number:</span></div>
+            <div class="font-medium">#{{ order.order_number }}</div>
+            <div><span class="text-gray-500">Order Date:</span></div>
+            <div class="font-medium">{{ order.created_at|date:"d M Y, H:i" }}</div>
+            <div><span class="text-gray-500">Total Amount:</span></div>
+            <div class="font-medium">₹{{ order.total_amount }}</div>
+            <div><span class="text-gray-500">Payment Method:</span></div>
+            <div class="font-medium">{{ order.get_payment_method_display }}</div>
+            <div><span class="text-gray-500">Status:</span></div>
+            <div class="font-medium">{{ order.get_status_display }}</div>
+        </div>
+    </div>
+    
+    <div class="flex flex-col sm:flex-row gap-3 justify-center">
+        <a href="{% url 'orders:detail' order.order_number %}" 
+           class="bg-black text-white px-8 py-4 text-sm tracking-widest hover:bg-gray-800 transition">
+            VIEW ORDER DETAILS
+        </a>
+        <a href="{% url 'catalog:product_list' %}" 
+           class="border border-black px-8 py-4 text-sm tracking-widest hover:bg-black hover:text-white transition">
+            CONTINUE SHOPPING
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,47 @@
+{% extends 'base.html' %}
+
+{% block title %}Contact Us - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-12 lg:py-16">
+    <div class="text-center mb-10">
+        <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-3">Contact Us</h1>
+        <p class="text-gray-500 text-sm">We'd love to hear from you. Send us a message and we'll respond shortly.</p>
+    </div>
+
+    <form method="post" class="space-y-4">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <input type="text" name="name" placeholder="Your Name" required
+                   class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+            <input type="email" name="email" placeholder="Your Email" required
+                   class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+        </div>
+        <input type="tel" name="phone" placeholder="Phone (optional)"
+               class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+        <input type="text" name="subject" placeholder="Subject" required
+               class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+        <textarea name="message" rows="6" placeholder="Your Message" required
+                  class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black"></textarea>
+        <button type="submit"
+                class="w-full bg-black text-white py-4 text-sm tracking-widest hover:bg-gray-800 transition">
+            SEND MESSAGE
+        </button>
+    </form>
+
+    <div class="mt-12 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm">
+        <div class="text-center p-6 border border-gray-200">
+            <p class="font-medium mb-1">Email</p>
+            <p class="text-gray-500">care@hayahmizan.com</p>
+        </div>
+        <div class="text-center p-6 border border-gray-200">
+            <p class="font-medium mb-1">Phone</p>
+            <p class="text-gray-500">+91 98765 43210</p>
+        </div>
+        <div class="text-center p-6 border border-gray-200">
+            <p class="font-medium mb-1">Hours</p>
+            <p class="text-gray-500">Mon–Sat, 10AM–7PM</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,356 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{{ product.meta_title|default:product.name }} - HAYAH MIZAN{% endblock %}
+{% block meta_description %}{{ product.meta_description|default:product.short_description }}{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8 lg:py-12" x-data="productDetail({{ variant_matrix|safe }}, '{{ product.price }}')">
+    
+    <!-- Breadcrumbs -->
+    <nav class="text-xs tracking-wider text-gray-500 mb-8">
+        <a href="{% url 'core:home' %}" class="hover:text-black">HOME</a>
+        <span class="mx-2">/</span>
+        <a href="{{ product.category.get_absolute_url }}" class="hover:text-black">{{ product.category.name|upper }}</a>
+        <span class="mx-2">/</span>
+        <span class="text-black">{{ product.name|upper }}</span>
+    </nav>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 lg:gap-16">
+        
+        <!-- Images -->
+        <div class="space-y-4">
+            <div class="aspect-[3/4] bg-gray-100 overflow-hidden">
+                 <img id="main-image" src="{{ product.main_image_url }}" alt="{{ product.name }}"
+                     class="w-full h-full object-cover">
+            </div>
+            {% if product.gallery_images %}
+            <div class="grid grid-cols-4 gap-2">
+                <button onclick="document.getElementById('main-image').src='{{ product.main_image_url }}'"
+                        class="aspect-square bg-gray-100 overflow-hidden border-2 border-transparent hover:border-black">
+                    <img src="{{ product.main_image_url }}" class="w-full h-full object-cover">
+                </button>
+                {% for img in product.gallery_images %}
+                <button onclick="document.getElementById('main-image').src='{{ img }}'"
+                        class="aspect-square bg-gray-100 overflow-hidden border-2 border-transparent hover:border-black">
+                    <img src="{{ img }}" class="w-full h-full object-cover">
+                </button>
+                {% endfor %}
+            </div>
+            {% endif %}
+        </div>
+        
+        <!-- Details -->
+        <div class="lg:sticky lg:top-24 lg:self-start">
+            <p class="text-xs tracking-widest text-gray-500 mb-2">{{ product.brand.name|default:"HAYAH MIZAN" }}</p>
+            <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-4">{{ product.name }}</h1>
+            
+            <!-- Rating -->
+            {% if product.average_rating > 0 %}
+            <div class="flex items-center gap-2 mb-4">
+                <div class="flex text-yellow-500">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= product.average_rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </div>
+                <span class="text-sm text-gray-500">{{ product.average_rating }} ({{ product.total_reviews }} reviews)</span>
+            </div>
+            {% endif %}
+            
+            <!-- Price -->
+            <div class="flex items-center gap-3 mb-6">
+                <span class="text-2xl font-bold" x-text="'₹' + currentPrice">₹{{ product.price }}</span>
+                {% if product.compare_at_price and product.compare_at_price > product.price %}
+                <span class="text-lg text-gray-400 line-through">₹{{ product.compare_at_price }}</span>
+                <span class="bg-red-600 text-white text-xs px-2 py-1 tracking-wider">-{{ product.discount_percentage }}%</span>
+                {% endif %}
+            </div>
+            
+            <!-- Short Description -->
+            {% if product.short_description %}
+            <p class="text-gray-600 mb-6">{{ product.short_description }}</p>
+            {% endif %}
+            
+            <!-- Color Selection -->
+            {% if colors %}
+            <div class="mb-6">
+                <h3 class="text-sm tracking-widest mb-3">COLOR: <span x-text="selectedColor" class="font-medium"></span></h3>
+                <div class="flex gap-2 flex-wrap">
+                    {% for color in colors %}
+                    <button @click="selectColor('{{ color }}')" 
+                            :class="selectedColor === '{{ color }}' ? 'border-black' : 'border-gray-300'"
+                            class="px-4 py-2 border-2 text-sm hover:border-black transition">
+                        {{ color }}
+                    </button>
+                    {% endfor %}
+                </div>
+            </div>
+            {% endif %}
+            
+            <!-- Size Selection -->
+            {% if sizes %}
+            <div class="mb-6">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm tracking-widest">SIZE: <span x-text="selectedSize" class="font-medium"></span></h3>
+                    <button class="text-xs text-gray-500 underline hover:text-black">Size Guide</button>
+                </div>
+                <div class="flex gap-2 flex-wrap">
+                    {% for size in sizes %}
+                    <button @click="selectSize('{{ size }}')" 
+                            :disabled="!isSizeAvailable('{{ size }}')"
+                            :class="selectedSize === '{{ size }}' ? 'border-black bg-black text-white' : (isSizeAvailable('{{ size }}') ? 'border-gray-300 hover:border-black' : 'border-gray-200 text-gray-300 cursor-not-allowed')"
+                            class="px-4 py-2 border-2 text-sm transition min-w-[3rem]">
+                        {{ size }}
+                    </button>
+                    {% endfor %}
+                </div>
+                <p x-show="stockMessage" x-text="stockMessage" class="text-xs mt-2 text-red-600"></p>
+            </div>
+            {% endif %}
+            
+            <!-- Quantity -->
+            <div class="mb-6">
+                <h3 class="text-sm tracking-widest mb-3">QUANTITY</h3>
+                <div class="flex items-center border border-gray-300 w-fit">
+                    <button @click="if (quantity > 1) quantity--" class="px-4 py-3 hover:bg-gray-100">−</button>
+                    <span class="px-6" x-text="quantity">1</span>
+                    <button @click="quantity++" class="px-4 py-3 hover:bg-gray-100">+</button>
+                </div>
+            </div>
+            
+            <!-- Add to Cart / Buy Now -->
+            <div class="space-y-3 mb-8">
+                <button @click="addToCart()" :disabled="!canAddToCart"
+                        :class="canAddToCart ? 'bg-black hover:bg-gray-800' : 'bg-gray-300 cursor-not-allowed'"
+                        class="w-full text-white py-4 text-sm tracking-widest transition">
+                    ADD TO CART
+                </button>
+                <button @click="buyNow()" :disabled="!canAddToCart"
+                        :class="canAddToCart ? 'border-black hover:bg-black hover:text-white' : 'border-gray-300 text-gray-300 cursor-not-allowed'"
+                        class="w-full border-2 py-4 text-sm tracking-widest transition">
+                    BUY NOW
+                </button>
+                {% if user.is_authenticated %}
+                <button onclick="toggleWishlist({{ product.id }}, this)" 
+                        class="w-full border border-gray-300 py-3 text-sm tracking-widest hover:border-black flex items-center justify-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+                    </svg>
+                    ADD TO WISHLIST
+                </button>
+                {% endif %}
+            </div>
+            
+            <!-- Delivery Checker -->
+            <div class="border-t pt-6 mb-6">
+                <h3 class="text-sm tracking-widest mb-3">CHECK DELIVERY</h3>
+                <div class="flex">
+                    <input type="text" placeholder="Enter pincode" maxlength="6"
+                           class="flex-1 px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                    <button class="px-6 bg-black text-white text-sm tracking-widest hover:bg-gray-800">CHECK</button>
+                </div>
+            </div>
+            
+            <!-- Product Details -->
+            <div class="border-t pt-6 space-y-4 text-sm" x-data="{ open: 'description' }">
+                <div class="border-b pb-3">
+                    <button @click="open = open === 'description' ? '' : 'description'" 
+                            class="flex justify-between items-center w-full text-left text-sm tracking-widest">
+                        <span>DESCRIPTION</span>
+                        <span x-text="open === 'description' ? '−' : '+'"></span>
+                    </button>
+                    <div x-show="open === 'description'" x-collapse class="mt-3 text-gray-600 leading-relaxed">
+                        {{ product.description|linebreaks }}
+                    </div>
+                </div>
+                
+                {% if product.material %}
+                <div class="border-b pb-3">
+                    <button @click="open = open === 'material' ? '' : 'material'" 
+                            class="flex justify-between items-center w-full text-left text-sm tracking-widest">
+                        <span>MATERIAL & CARE</span>
+                        <span x-text="open === 'material' ? '−' : '+'"></span>
+                    </button>
+                    <div x-show="open === 'material'" x-collapse class="mt-3 text-gray-600">
+                        <p><strong>Material:</strong> {{ product.material }}</p>
+                        {% if product.care_instructions %}<p class="mt-2">{{ product.care_instructions }}</p>{% endif %}
+                    </div>
+                </div>
+                {% endif %}
+                
+                {% if product.fit %}
+                <div class="border-b pb-3">
+                    <button @click="open = open === 'fit' ? '' : 'fit'" 
+                            class="flex justify-between items-center w-full text-left text-sm tracking-widest">
+                        <span>FIT & SIZING</span>
+                        <span x-text="open === 'fit' ? '−' : '+'"></span>
+                    </button>
+                    <div x-show="open === 'fit'" x-collapse class="mt-3 text-gray-600">
+                        {{ product.fit }}
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Related Products -->
+    {% if related_products %}
+    <section class="mt-20">
+        <h2 class="font-serif text-2xl lg:text-3xl font-bold mb-8">You May Also Like</h2>
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            {% for p in related_products %}
+                {% include 'catalog/partials/product_card.html' with product=p %}
+            {% endfor %}
+        </div>
+    </section>
+    {% endif %}
+    
+    <!-- Reviews -->
+    <section class="mt-20">
+        <h2 class="font-serif text-2xl lg:text-3xl font-bold mb-8">Customer Reviews</h2>
+        {% if reviews %}
+        <div class="space-y-6">
+            {% for review in reviews %}
+            <div class="border-b pb-6">
+                <div class="flex items-center gap-3 mb-2">
+                    <div class="w-10 h-10 bg-gray-200 rounded-full flex items-center justify-center text-sm font-medium">
+                        {{ review.user.first_name|first|upper }}
+                    </div>
+                    <div>
+                        <p class="text-sm font-medium">{{ review.user.get_full_name }}</p>
+                        {% if review.is_verified_purchase %}
+                        <p class="text-xs text-green-600">✓ Verified Purchase</p>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="flex text-yellow-500 text-sm mb-2">
+                    {% for i in "12345" %}
+                        {% if forloop.counter <= review.rating %}★{% else %}☆{% endif %}
+                    {% endfor %}
+                </div>
+                {% if review.title %}<h4 class="font-medium mb-2">{{ review.title }}</h4>{% endif %}
+                <p class="text-gray-600 text-sm">{{ review.comment }}</p>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500">No reviews yet. Be the first to review this product!</p>
+        {% endif %}
+        
+        {% if user.is_authenticated %}
+        <a href="{% url 'reviews:add' product.slug %}" 
+           class="inline-block mt-6 border border-black px-8 py-3 text-sm tracking-widest hover:bg-black hover:text-white transition">
+            WRITE A REVIEW
+        </a>
+        {% else %}
+        <p class="mt-6 text-sm text-gray-500">
+            <a href="{% url 'accounts:login' %}" class="underline">Login</a> to write a review.
+        </p>
+        {% endif %}
+    </section>
+</div>
+
+<script>
+function productDetail(variantMatrix, basePrice) {
+    return {
+        variantMatrix: variantMatrix,
+        selectedColor: Object.keys(variantMatrix)[0] || '',
+        selectedSize: '',
+        quantity: 1,
+        currentPrice: basePrice,
+        currentVariantId: null,
+        stockMessage: '',
+        
+        init() {
+            if (this.selectedColor) {
+                const sizes = Object.keys(this.variantMatrix[this.selectedColor] || {});
+                if (sizes.length > 0) this.selectedSize = sizes[0];
+                this.updateVariant();
+            }
+        },
+        
+        selectColor(color) {
+            this.selectedColor = color;
+            const sizes = Object.keys(this.variantMatrix[color] || {});
+            if (!sizes.includes(this.selectedSize)) {
+                this.selectedSize = sizes[0] || '';
+            }
+            this.updateVariant();
+        },
+        
+        selectSize(size) {
+            this.selectedSize = size;
+            this.updateVariant();
+        },
+        
+        isSizeAvailable(size) {
+            const variant = (this.variantMatrix[this.selectedColor] || {})[size];
+            return variant && variant.in_stock;
+        },
+        
+        updateVariant() {
+            const variant = (this.variantMatrix[this.selectedColor] || {})[this.selectedSize];
+            if (variant) {
+                this.currentVariantId = variant.id;
+                this.currentPrice = variant.price;
+                if (!variant.in_stock) {
+                    this.stockMessage = 'Out of stock for this size';
+                } else if (variant.quantity < 5) {
+                    this.stockMessage = `Only ${variant.quantity} left!`;
+                } else {
+                    this.stockMessage = '';
+                }
+            }
+        },
+        
+        get canAddToCart() {
+            const variant = (this.variantMatrix[this.selectedColor] || {})[this.selectedSize];
+            return variant && variant.in_stock;
+        },
+        
+        addToCart() {
+            if (!this.currentVariantId) return;
+            
+            fetch('{% url "cart:add" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `variant_id=${this.currentVariantId}&quantity=${this.quantity}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    document.getElementById('cart-count').textContent = data.cart_total_items;
+                    // Open cart sidebar
+                    document.querySelector('[x-data]').__x.$data.cartOpen = true;
+                    htmx.ajax('GET', '{% url "cart:sidebar" %}', '#cart-sidebar-container');
+                } else {
+                    alert(data.error || 'Failed to add to cart');
+                }
+            });
+        },
+        
+        buyNow() {
+            if (!this.currentVariantId) return;
+            fetch('{% url "cart:add" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: `variant_id=${this.currentVariantId}&quantity=${this.quantity}`
+            })
+            .then(r => r.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '{% url "orders:checkout" %}';
+                }
+            });
+        }
+    }
+}
+</script>
+{% endblock %}

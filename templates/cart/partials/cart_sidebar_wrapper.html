@@ -1,0 +1,51 @@
+<div x-show="cartOpen" x-cloak x-transition.opacity
+     class="fixed inset-0 bg-black/50 z-50" @click="cartOpen = false">
+    <div class="absolute right-0 top-0 bottom-0 w-full max-w-md bg-white shadow-xl overflow-y-auto"
+         @click.stop x-transition:enter="transition transform duration-300"
+         x-transition:enter-start="translate-x-full" x-transition:enter-end="translate-x-0"
+         id="cart-sidebar-container">
+        {% include 'cart/partials/cart_sidebar.html' %}
+    </div>
+</div>
+
+<script>
+    // Refresh cart sidebar when opened
+    document.body.addEventListener('htmx:afterSwap', function(evt) {
+        if (evt.detail.target.id === 'cart-sidebar-container') {
+            // Cart updated
+        }
+    });
+    
+    // Load cart sidebar on open
+    document.body.addEventListener('click', function(e) {
+        if (e.target.closest('[\\@click="cartOpen = true"]')) {
+            htmx.ajax('GET', '{% url "cart:sidebar" %}', '#cart-sidebar-container');
+        }
+    });
+    
+    function toggleWishlist(productId, btn) {
+        fetch(`/wishlist/toggle/${productId}/`, {
+            method: 'POST',
+            headers: {
+                'X-CSRFToken': csrftoken,
+                'Content-Type': 'application/json',
+            },
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.in_wishlist) {
+                btn.querySelector('svg').setAttribute('fill', 'currentColor');
+                btn.querySelector('svg').classList.add('text-red-500');
+            } else {
+                btn.querySelector('svg').setAttribute('fill', 'none');
+                btn.querySelector('svg').classList.remove('text-red-500');
+            }
+        });
+    }
+</script>
+
+<div id="quick-view-modal" class="hidden fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4"
+     onclick="this.classList.add('hidden')">
+    <div class="bg-white rounded-lg max-w-4xl w-full max-h-[90vh] overflow-y-auto" onclick="event.stopPropagation()">
+    </div>
+</div>

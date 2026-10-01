@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+
+{% block title %}FAQ - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-12 lg:py-16">
+    <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-8 text-center">Frequently Asked Questions</h1>
+
+    <div class="space-y-3" x-data="{ open: null }">
+
+        {% for faq in "12345678" %}
+        {% cycle 'How long does shipping take?' 'Do you offer returns?' 'How do I know my size?' 'What payment methods do you accept?' 'Do you ship internationally?' 'How can I track my order?' 'Are the products true to size?' 'How do I contact customer support?' as q silent %}
+        {% cycle 'Standard shipping takes 5–7 business days across India. Express delivery is available for select pincodes.' 'Yes — we offer 7-day easy returns and exchanges on all unworn items with original tags.' 'Each product page includes a detailed size guide. If you are between sizes, we recommend sizing up.' 'We accept UPI, credit/debit cards, net banking, wallets, and Cash on Delivery (where available).' 'Currently we ship across India. International shipping is coming soon.' 'Once shipped, you will receive a tracking link via email and SMS.' 'Our products follow standard Indian sizing. Please refer to the size chart on each product page.' 'You can reach us at care@hayahmizan.com or via the Contact page. We respond within 24 hours.' as a silent %}
+        <div class="border border-gray-200">
+            <button @click="open = open === {{ forloop.counter }} ? null : {{ forloop.counter }}"
+                    class="w-full flex justify-between items-center p-5 text-left text-sm font-medium hover:bg-gray-50">
+                <span>{{ q }}</span>
+                <span x-text="open === {{ forloop.counter }} ? '−' : '+'"></span>
+            </button>
+            <div x-show="open === {{ forloop.counter }}" x-collapse class="px-5 pb-5 text-sm text-gray-600">
+                {{ a }}
+            </div>
+        </div>
+        {% endfor %}
+
+    </div>
+</div>
+{% endblock %}

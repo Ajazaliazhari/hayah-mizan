@@ -1,0 +1,58 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}Brands{% endblock %}
+
+{% block content %}
+<div class="flex justify-between items-center mb-6">
+    <p class="text-sm text-gray-500">{{ brands|length }} brand{{ brands|length|pluralize }}</p>
+    <a href="{% url 'dashboard:brand_create' %}"
+       class="bg-black text-white px-5 py-3 text-xs tracking-widest hover:bg-gray-800 transition">
+        + ADD BRAND
+    </a>
+</div>
+
+<div class="bg-white rounded border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">LOGO</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">NAME</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">PRODUCTS</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">STATUS</th>
+                <th class="text-right p-4 text-xs tracking-widest text-gray-500">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for b in brands %}
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+                <td class="p-4">
+                    {% if b.logo %}
+                    <img src="{{ b.logo.url }}" class="w-16 h-10 object-contain bg-gray-50 rounded">
+                    {% else %}
+                    <div class="w-16 h-10 bg-gray-100 rounded"></div>
+                    {% endif %}
+                </td>
+                <td class="p-4 font-medium">{{ b.name }}<br><span class="text-xs text-gray-400">{{ b.slug }}</span></td>
+                <td class="p-4 text-gray-600">{{ b.products.count }}</td>
+                <td class="p-4">
+                    {% if b.is_active %}
+                    <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Active</span>
+                    {% else %}
+                    <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">Inactive</span>
+                    {% endif %}
+                </td>
+                <td class="p-4 text-right">
+                    <a href="{% url 'dashboard:brand_edit' b.pk %}" class="text-xs underline">Edit</a>
+                    <form method="post" action="{% url 'dashboard:brand_delete' b.pk %}" class="inline"
+                          onsubmit="return confirm('Delete {{ b.name }}?')">
+                        {% csrf_token %}
+                        <button class="text-xs underline text-red-600 ml-3">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" class="p-8 text-center text-gray-500">No brands yet.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Terms & Conditions - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-12 lg:py-16">
+    <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-2">Terms & Conditions</h1>
+    <p class="text-sm text-gray-500 mb-8">Last updated: {% now "F Y" %}</p>
+
+    <div class="prose prose-sm max-w-none text-gray-600 space-y-6">
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">1. Use of Website</h2>
+            <p>By accessing HAYAH MIZAN, you agree to use the site for lawful purposes only and not to misuse its content.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">2. Orders and Payments</h2>
+            <p>All orders are subject to availability and confirmation of payment. Prices are in INR and inclusive of applicable taxes.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">3. Shipping and Delivery</h2>
+            <p>Delivery times are estimates only. Delays caused by carriers or unforeseen events are outside our control.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">4. Returns and Refunds</h2>
+            <p>Returns are accepted within 7 days of delivery for unworn items with tags attached. Refunds are processed within 5–7 business days.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">5. Intellectual Property</h2>
+            <p>All content on this site — including images, logos, and text — is the property of HAYAH MIZAN and may not be reproduced without permission.</p>
+        </section>
+    </div>
+</div>
+{% endblock %}

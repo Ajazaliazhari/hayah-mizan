@@ -1,0 +1,80 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}{{ action }} Coupon{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl">
+    <a href="{% url 'dashboard:coupon_list' %}" class="text-xs text-gray-500 hover:text-black">← Back to Coupons</a>
+
+    <form method="post" class="bg-white p-6 rounded border border-gray-200 mt-4 space-y-5">
+        {% csrf_token %}
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+            <div>
+                <label class="block text-xs tracking-widest mb-2">CODE *</label>
+                <input type="text" name="code" required value="{{ coupon.code|default:'' }}" style="text-transform:uppercase"
+                       class="w-full px-4 py-3 border border-gray-300 font-mono focus:outline-none focus:border-black">
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">DISCOUNT TYPE *</label>
+                <select name="discount_type" class="w-full px-4 py-3 border border-gray-300">
+                    <option value="percentage" {% if coupon.discount_type == 'percentage' %}selected{% endif %}>Percentage (%)</option>
+                    <option value="fixed" {% if coupon.discount_type == 'fixed' %}selected{% endif %}>Fixed Amount (₹)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">DISCOUNT VALUE *</label>
+                <input type="number" step="0.01" name="discount_value" required value="{{ coupon.discount_value|default:'' }}"
+                       class="w-full px-4 py-3 border border-gray-300">
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">MIN CART VALUE</label>
+                <input type="number" step="0.01" name="min_cart_value" value="{{ coupon.min_cart_value|default:0 }}"
+                       class="w-full px-4 py-3 border border-gray-300">
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">MAX DISCOUNT (cap)</label>
+                <input type="number" step="0.01" name="max_discount" value="{{ coupon.max_discount|default:'' }}"
+                       class="w-full px-4 py-3 border border-gray-300">
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">TOTAL USAGE LIMIT</label>
+                <input type="number" name="usage_limit" value="{{ coupon.usage_limit|default:'' }}"
+                       class="w-full px-4 py-3 border border-gray-300">
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">PER-USER LIMIT</label>
+                <input type="number" name="usage_limit_per_user" value="{{ coupon.usage_limit_per_user|default:1 }}"
+                       class="w-full px-4 py-3 border border-gray-300">
+            </div>
+            <div>
+                <label class="block text-xs tracking-widest mb-2">VALID UNTIL</label>
+                <input type="datetime-local" name="valid_until" value="{{ coupon.valid_until|date:'Y-m-d\TH:i' }}"
+                       class="w-full px-4 py-3 border border-gray-300">
+            </div>
+        </div>
+
+        <div>
+            <label class="block text-xs tracking-widest mb-2">DESCRIPTION</label>
+            <textarea name="description" rows="2"
+                      class="w-full px-4 py-3 border border-gray-300">{{ coupon.description|default:'' }}</textarea>
+        </div>
+
+        <div class="space-y-2">
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="first_order_only" {% if coupon.first_order_only %}checked{% endif %} class="w-4 h-4">
+                <span class="text-sm">First order only</span>
+            </label>
+            <label class="flex items-center gap-2">
+                <input type="checkbox" name="is_active" {% if coupon.is_active or not coupon %}checked{% endif %} class="w-4 h-4">
+                <span class="text-sm">Active</span>
+            </label>
+        </div>
+
+        <div class="flex gap-3 pt-4 border-t">
+            <button class="bg-black text-white px-6 py-3 text-xs tracking-widest hover:bg-gray-800">SAVE COUPON</button>
+            <a href="{% url 'dashboard:coupon_list' %}"
+               class="px-6 py-3 text-xs tracking-widest border border-gray-300 hover:border-black">CANCEL</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

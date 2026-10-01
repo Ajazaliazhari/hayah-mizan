@@ -1,0 +1,60 @@
+<div class="group relative">
+    <a href="{{ product.get_absolute_url }}" class="block relative aspect-[3/4] overflow-hidden bg-gray-100">
+        <img src="{{ product.main_image_url }}" alt="{{ product.name }}" loading="lazy"
+             class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+        
+        <!-- Badges -->
+        <div class="absolute top-3 left-3 flex flex-col gap-2">
+            {% if product.is_new %}
+            <span class="bg-black text-white text-[10px] tracking-widest px-2 py-1">NEW</span>
+            {% endif %}
+            {% if product.discount_percentage > 0 %}
+            <span class="bg-red-600 text-white text-[10px] tracking-widest px-2 py-1">-{{ product.discount_percentage }}%</span>
+            {% endif %}
+            {% if not product.variants_with_stock %}
+            <span class="bg-gray-500 text-white text-[10px] tracking-widest px-2 py-1">SOLD OUT</span>
+            {% endif %}
+        </div>
+        
+        <!-- Wishlist Button -->
+        {% if user.is_authenticated %}
+        <button onclick="event.preventDefault(); toggleWishlist({{ product.id }}, this)" 
+                class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-gray-100 transition">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+        </button>
+        {% endif %}
+        
+        <!-- Quick View -->
+        <button hx-get="{% url 'catalog:quick_view' product.slug %}" 
+                hx-target="#quick-view-modal" hx-swap="innerHTML"
+                onclick="event.preventDefault(); document.getElementById('quick-view-modal').classList.remove('hidden')"
+                class="absolute bottom-4 left-1/2 -translate-x-1/2 bg-white text-black text-xs tracking-widest px-6 py-2 opacity-0 group-hover:opacity-100 transition whitespace-nowrap">
+            QUICK VIEW
+        </button>
+    </a>
+    
+    <div class="mt-4">
+        <p class="text-xs text-gray-500 tracking-wider mb-1">{{ product.brand.name|default:"HAYAH MIZAN" }}</p>
+        <h3 class="text-sm font-medium mb-2 line-clamp-1">
+            <a href="{{ product.get_absolute_url }}" class="hover:text-gray-600">{{ product.name }}</a>
+        </h3>
+        <div class="flex items-center gap-2">
+            <span class="font-semibold">₹{{ product.price }}</span>
+            {% if product.compare_at_price and product.compare_at_price > product.price %}
+            <span class="text-sm text-gray-400 line-through">₹{{ product.compare_at_price }}</span>
+            {% endif %}
+        </div>
+        {% if product.average_rating > 0 %}
+        <div class="flex items-center gap-1 mt-1">
+            <div class="flex text-yellow-500 text-xs">
+                {% for i in "12345" %}
+                    {% if forloop.counter <= product.average_rating %}★{% else %}☆{% endif %}
+                {% endfor %}
+            </div>
+            <span class="text-xs text-gray-500">({{ product.total_reviews }})</span>
+        </div>
+        {% endif %}
+    </div>
+</div>

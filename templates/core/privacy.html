@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Privacy Policy - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-12 lg:py-16">
+    <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-2">Privacy Policy</h1>
+    <p class="text-sm text-gray-500 mb-8">Last updated: {% now "F Y" %}</p>
+
+    <div class="prose prose-sm max-w-none text-gray-600 space-y-6">
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">1. Information We Collect</h2>
+            <p>We collect information you provide when creating an account, placing an order, or contacting us — including your name, email, phone number, and shipping address.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">2. How We Use Your Information</h2>
+            <p>Your information is used to process orders, provide customer support, send order updates, and improve our services. We never sell your personal data.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">3. Cookies</h2>
+            <p>We use cookies to keep you signed in and to remember your cart between visits. You can disable cookies in your browser settings.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">4. Data Security</h2>
+            <p>We use industry-standard encryption and security measures to protect your data. Payment information is handled by PCI-compliant partners.</p>
+        </section>
+        <section>
+            <h2 class="font-serif text-xl font-bold text-black mb-2">5. Contact</h2>
+            <p>For privacy-related questions, email us at <strong>care@hayahmizan.com</strong>.</p>
+        </section>
+    </div>
+</div>
+{% endblock %}

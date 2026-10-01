@@ -1,0 +1,222 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}{{ action }} Product{% endblock %}
+
+{% block content %}
+<div x-data="productForm()">
+    <a href="{% url 'dashboard:product_list' %}" class="text-xs text-gray-500 hover:text-black">← Back to Products</a>
+
+    <form method="post" enctype="multipart/form-data" class="mt-4 space-y-6">
+        {% csrf_token %}
+
+        <!-- BASIC INFO -->
+        <div class="bg-white p-6 rounded border border-gray-200">
+            <h3 class="text-sm tracking-widest mb-5 pb-3 border-b">BASIC INFORMATION</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">PRODUCT NAME *</label>
+                    <input type="text" name="name" required value="{{ product.name|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">SLUG</label>
+                    <input type="text" name="slug" value="{{ product.slug|default:'' }}" placeholder="auto-generated"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">SKU *</label>
+                    <input type="text" name="sku" required value="{{ product.sku|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">CATEGORY *</label>
+                    <select name="category" required class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                        <option value="">— Select —</option>
+                        {% for c in categories %}
+                        <option value="{{ c.pk }}" {% if product.category_id == c.pk %}selected{% endif %}>{{ c.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">BRAND</label>
+                    <select name="brand" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                        <option value="">— None —</option>
+                        {% for b in brands %}
+                        <option value="{{ b.pk }}" {% if product.brand_id == b.pk %}selected{% endif %}>{{ b.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">GENDER</label>
+                    <select name="gender" class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                        <option value="U" {% if product.gender == 'U' %}selected{% endif %}>Unisex</option>
+                        <option value="M" {% if product.gender == 'M' %}selected{% endif %}>Men</option>
+                        <option value="F" {% if product.gender == 'F' %}selected{% endif %}>Women</option>
+                        <option value="K" {% if product.gender == 'K' %}selected{% endif %}>Kids</option>
+                    </select>
+                </div>
+            </div>
+            <div class="mt-5">
+                <label class="block text-xs tracking-widest mb-2">SHORT DESCRIPTION</label>
+                <input type="text" name="short_description" value="{{ product.short_description|default:'' }}"
+                       maxlength="300"
+                       class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+            </div>
+            <div class="mt-5">
+                <label class="block text-xs tracking-widest mb-2">DESCRIPTION</label>
+                <textarea name="description" rows="5"
+                          class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">{{ product.description|default:'' }}</textarea>
+            </div>
+        </div>
+
+        <!-- PRICING -->
+        <div class="bg-white p-6 rounded border border-gray-200">
+            <h3 class="text-sm tracking-widest mb-5 pb-3 border-b">PRICING</h3>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">PRICE (₹) *</label>
+                    <input type="number" step="0.01" name="price" required value="{{ product.price|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">COMPARE-AT PRICE (MRP)</label>
+                    <input type="number" step="0.01" name="compare_at_price" value="{{ product.compare_at_price|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+            </div>
+        </div>
+
+        <!-- ATTRIBUTES -->
+        <div class="bg-white p-6 rounded border border-gray-200">
+            <h3 class="text-sm tracking-widest mb-5 pb-3 border-b">ATTRIBUTES</h3>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">MATERIAL</label>
+                    <input type="text" name="material" value="{{ product.material|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">FIT</label>
+                    <input type="text" name="fit" value="{{ product.fit|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+                <div>
+                    <label class="block text-xs tracking-widest mb-2">CARE INSTRUCTIONS</label>
+                    <input type="text" name="care_instructions" value="{{ product.care_instructions|default:'' }}"
+                           class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+                </div>
+            </div>
+        </div>
+
+        <!-- IMAGE -->
+        <div class="bg-white p-6 rounded border border-gray-200">
+            <h3 class="text-sm tracking-widest mb-5 pb-3 border-b">PRODUCT IMAGE</h3>
+            {% if product.main_image %}
+            <img src="{{ product.main_image_url }}" class="w-40 h-52 object-cover rounded mb-4">
+            {% endif %}
+            <input type="file" name="main_image" accept="image/*"
+                   class="w-full px-4 py-3 border border-gray-300 focus:outline-none focus:border-black">
+            <p class="text-xs text-gray-500 mt-2">Recommended: 800×1000px, JPG/WebP, under 500KB.</p>
+        </div>
+
+        <!-- VARIANTS -->
+        <div class="bg-white p-6 rounded border border-gray-200">
+            <div class="flex justify-between items-center mb-5 pb-3 border-b">
+                <h3 class="text-sm tracking-widest">VARIANTS (SIZE / COLOR)</h3>
+                <button type="button" @click="addVariant()"
+                        class="text-xs bg-black text-white px-3 py-2 tracking-widest">+ ADD VARIANT</button>
+            </div>
+
+            <!-- Existing variants -->
+            {% if variants %}
+            <p class="text-xs tracking-widest text-gray-500 mb-3">EXISTING</p>
+            <div class="space-y-3 mb-6">
+                {% for v in variants %}
+                <div class="grid grid-cols-12 gap-2 items-center p-3 bg-gray-50 rounded">
+                    <input type="hidden" name="variant_id" value="{{ v.pk }}">
+                    <input type="text" name="variant_color" value="{{ v.color }}" placeholder="Color"
+                           class="col-span-3 px-3 py-2 border border-gray-300 text-sm">
+                    <input type="text" name="variant_size" value="{{ v.size }}" placeholder="Size"
+                           class="col-span-2 px-3 py-2 border border-gray-300 text-sm">
+                    <input type="number" name="variant_quantity" value="{{ v.quantity }}" placeholder="Stock"
+                           class="col-span-2 px-3 py-2 border border-gray-300 text-sm">
+                    <input type="number" step="0.01" name="variant_price" value="{{ v.price|default:'' }}" placeholder="Price override"
+                           class="col-span-2 px-3 py-2 border border-gray-300 text-sm">
+                    <label class="col-span-2 flex items-center gap-1 text-xs">
+                        <input type="checkbox" name="variant_is_active" {% if v.is_active %}checked{% endif %}>
+                        Active
+                    </label>
+                    <a href="{% url 'dashboard:variant_delete' v.pk %}"
+                       onclick="return confirm('Delete variant?')"
+                       class="col-span-1 text-xs text-red-600 underline text-right">Del</a>
+                </div>
+                {% endfor %}
+            </div>
+            {% endif %}
+
+            <!-- New variants -->
+            <p class="text-xs tracking-widest text-gray-500 mb-3" x-show="variants.length > 0">NEW</p>
+            <template x-for="(variant, index) in variants" :key="index">
+                <div class="grid grid-cols-12 gap-2 items-center p-3 bg-blue-50 rounded mb-2">
+                    <input type="text" :name="'new_variant_color'" x-model="variant.color" placeholder="Color"
+                           class="col-span-3 px-3 py-2 border border-gray-300 text-sm">
+                    <input type="text" :name="'new_variant_size'" x-model="variant.size" placeholder="Size"
+                           class="col-span-2 px-3 py-2 border border-gray-300 text-sm">
+                    <input type="number" :name="'new_variant_quantity'" x-model="variant.quantity" placeholder="Stock"
+                           class="col-span-3 px-3 py-2 border border-gray-300 text-sm">
+                    <input type="number" step="0.01" :name="'new_variant_price'" x-model="variant.price" placeholder="Price override"
+                           class="col-span-3 px-3 py-2 border border-gray-300 text-sm">
+                    <button type="button" @click="variants.splice(index, 1)"
+                            class="col-span-1 text-xs text-red-600 underline">Remove</button>
+                </div>
+            </template>
+            <p class="text-xs text-gray-500 mt-2">Add one row per size/color combination. SKU auto-generated.</p>
+        </div>
+
+        <!-- VISIBILITY -->
+        <div class="bg-white p-6 rounded border border-gray-200">
+            <h3 class="text-sm tracking-widest mb-5 pb-3 border-b">VISIBILITY & FLAGS</h3>
+            <div class="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="is_active" {% if product.is_active or not product %}checked{% endif %} class="w-4 h-4">
+                    <span class="text-sm">Active</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="is_featured" {% if product.is_featured %}checked{% endif %} class="w-4 h-4">
+                    <span class="text-sm">Featured</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="is_new" {% if product.is_new %}checked{% endif %} class="w-4 h-4">
+                    <span class="text-sm">New Arrival</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="is_best_seller" {% if product.is_best_seller %}checked{% endif %} class="w-4 h-4">
+                    <span class="text-sm">Best Seller</span>
+                </label>
+                <label class="flex items-center gap-2">
+                    <input type="checkbox" name="is_trending" {% if product.is_trending %}checked{% endif %} class="w-4 h-4">
+                    <span class="text-sm">Trending</span>
+                </label>
+            </div>
+        </div>
+
+        <div class="flex gap-3">
+            <button type="submit" class="bg-black text-white px-6 py-3 text-xs tracking-widest hover:bg-gray-800">
+                SAVE PRODUCT
+            </button>
+            <a href="{% url 'dashboard:product_list' %}"
+               class="px-6 py-3 text-xs tracking-widest border border-gray-300 hover:border-black">CANCEL</a>
+        </div>
+    </form>
+</div>
+
+<script>
+function productForm() {
+    return {
+        variants: [],
+        addVariant() {
+            this.variants.push({ color: '', size: '', quantity: 0, price: '' });
+        }
+    }
+}
+</script>
+{% endblock %}

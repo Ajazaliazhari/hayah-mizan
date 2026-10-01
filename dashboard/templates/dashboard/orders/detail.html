@@ -1,0 +1,119 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}Order #{{ order.order_number }}{% endblock %}
+
+{% block content %}
+<a href="{% url 'dashboard:order_list' %}" class="text-xs text-gray-500 hover:text-black">← Back to Orders</a>
+
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-4">
+
+    <!-- Left -->
+    <div class="lg:col-span-2 space-y-6">
+
+        <!-- Items -->
+        <div class="bg-white rounded border border-gray-200">
+            <div class="p-5 border-b"><h3 class="font-medium">Items</h3></div>
+            <table class="w-full text-sm">
+                <tbody>
+                    {% for item in order.items.all %}
+                    <tr class="border-t border-gray-100">
+                        <td class="p-4 w-20">
+                            {% if item.product_image %}
+                            <img src="{{ item.product_image }}" class="w-14 h-18 object-cover rounded">
+                            {% endif %}
+                        </td>
+                        <td class="p-4">
+                            <p class="font-medium">{{ item.product_name }}</p>
+                            <p class="text-xs text-gray-500">{{ item.color }} / {{ item.size }} · Qty {{ item.quantity }}</p>
+                        </td>
+                        <td class="p-4 text-right font-medium">₹{{ item.total_price }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+            <div class="p-5 border-t bg-gray-50 text-sm space-y-1">
+                <div class="flex justify-between"><span>Subtotal</span><span>₹{{ order.subtotal }}</span></div>
+                <div class="flex justify-between"><span>Discount</span><span>₹{{ order.discount_amount }}</span></div>
+                <div class="flex justify-between"><span>Shipping</span><span>₹{{ order.shipping_amount }}</span></div>
+                <div class="flex justify-between font-bold text-base pt-2 border-t mt-2">
+                    <span>Total</span><span>₹{{ order.total_amount }}</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timeline -->
+        <div class="bg-white rounded border border-gray-200">
+            <div class="p-5 border-b"><h3 class="font-medium">Order Timeline</h3></div>
+            <div class="p-5 space-y-3">
+                {% for event in order.events.all %}
+                <div class="flex gap-3 text-sm">
+                    <div class="w-2 h-2 rounded-full bg-black mt-2 flex-shrink-0"></div>
+                    <div>
+                        <p class="font-medium">{{ event.status|title }}</p>
+                        <p class="text-xs text-gray-500">{{ event.created_at|date:"d M Y, H:i" }}{% if event.description %} · {{ event.description }}{% endif %}</p>
+                    </div>
+                </div>
+                {% empty %}
+                <p class="text-sm text-gray-500">No events.</p>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Right -->
+    <div class="space-y-6">
+
+        <!-- Update Form -->
+        <form method="post" class="bg-white rounded border border-gray-200 p-5 space-y-4">
+            {% csrf_token %}
+            <h3 class="font-medium pb-3 border-b">Update Order</h3>
+
+            <div>
+                <label class="block text-xs tracking-widest mb-2">STATUS</label>
+                <select name="status" class="w-full px-3 py-2 border border-gray-300 text-sm">
+                    {% for value, label in statuses %}
+                    <option value="{{ value }}" {% if order.status == value %}selected{% endif %}>{{ label }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-xs tracking-widest mb-2">TRACKING NUMBER</label>
+                <input type="text" name="tracking_number" value="{{ order.tracking_number }}"
+                       class="w-full px-3 py-2 border border-gray-300 text-sm">
+            </div>
+
+            <div>
+                <label class="block text-xs tracking-widest mb-2">CARRIER</label>
+                <input type="text" name="carrier" value="{{ order.carrier }}"
+                       class="w-full px-3 py-2 border border-gray-300 text-sm">
+            </div>
+
+            <div>
+                <label class="block text-xs tracking-widest mb-2">ADMIN NOTES</label>
+                <textarea name="admin_notes" rows="3"
+                          class="w-full px-3 py-2 border border-gray-300 text-sm">{{ order.admin_notes }}</textarea>
+            </div>
+
+            <button class="w-full bg-black text-white py-3 text-xs tracking-widest hover:bg-gray-800">
+                SAVE CHANGES
+            </button>
+        </form>
+
+        <!-- Customer -->
+        <div class="bg-white rounded border border-gray-200 p-5">
+            <h3 class="font-medium pb-3 border-b mb-3">Customer</h3>
+            <p class="text-sm font-medium">{{ order.customer_name }}</p>
+            <p class="text-xs text-gray-500">{{ order.customer_email }}</p>
+            <p class="text-xs text-gray-500">{{ order.customer_phone }}</p>
+        </div>
+
+        <!-- Shipping -->
+        <div class="bg-white rounded border border-gray-200 p-5">
+            <h3 class="font-medium pb-3 border-b mb-3">Shipping Address</h3>
+            <p class="text-sm font-medium">{{ order.shipping_name }}</p>
+            <p class="text-xs text-gray-600 mt-1">{{ order.shipping_address_display }}</p>
+            <p class="text-xs text-gray-500 mt-2">Phone: {{ order.shipping_phone }}</p>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,32 @@
+{% extends 'base.html' %}
+
+{% block title %}My Addresses - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-4xl mx-auto px-4 py-12">
+    <h1 class="font-serif text-3xl font-bold mb-8">My Addresses</h1>
+
+    {% if addresses %}
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        {% for address in addresses %}
+        <div class="border border-gray-200 p-6 relative">
+            {% if address.is_default %}
+            <span class="absolute top-3 right-3 bg-black text-white text-[10px] tracking-widest px-2 py-1">DEFAULT</span>
+            {% endif %}
+            <p class="font-medium mb-1">{{ address.full_name }}</p>
+            <p class="text-sm text-gray-600">{{ address.address_line1 }}</p>
+            {% if address.address_line2 %}<p class="text-sm text-gray-600">{{ address.address_line2 }}</p>{% endif %}
+            <p class="text-sm text-gray-600">{{ address.city }}, {{ address.state }} - {{ address.pincode }}</p>
+            <p class="text-sm text-gray-600 mt-2">Phone: {{ address.phone }}</p>
+            <p class="text-xs text-gray-500 mt-2 uppercase tracking-wider">{{ address.get_address_type_display }}</p>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <div class="text-center py-16 border border-dashed border-gray-300">
+        <p class="text-gray-500 mb-4">You haven't saved any addresses yet.</p>
+        <p class="text-xs text-gray-400">Addresses can be added during checkout.</p>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,222 @@
+{% extends 'base.html' %}
+
+{% block title %}Checkout - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-12">
+    <h1 class="font-serif text-3xl font-bold mb-8">Checkout</h1>
+    
+    <form id="checkout-form" method="post">
+        {% csrf_token %}
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            
+            <!-- Left: Shipping & Payment -->
+            <div class="lg:col-span-2 space-y-8">
+                
+                <!-- Shipping Address -->
+                <div class="bg-white border border-gray-200 p-6">
+                    <h2 class="font-serif text-xl font-bold mb-4">Shipping Address</h2>
+                    
+                    {% if addresses %}
+                    <div class="space-y-3 mb-6">
+                        {% for address in addresses %}
+                        <label class="flex items-start gap-3 p-4 border border-gray-200 cursor-pointer hover:border-black transition">
+                            <input type="radio" name="address_id" value="{{ address.id }}" 
+                                   {% if address.is_default %}checked{% endif %}
+                                   class="mt-1 text-black focus:ring-black">
+                            <div class="flex-1 text-sm">
+                                <p class="font-medium">{{ address.full_name }}</p>
+                                <p class="text-gray-600">{{ address.address_line1 }}{% if address.address_line2 %}, {{ address.address_line2 }}{% endif %}</p>
+                                <p class="text-gray-600">{{ address.city }}, {{ address.state }} - {{ address.pincode }}</p>
+                                <p class="text-gray-600">Phone: {{ address.phone }}</p>
+                            </div>
+                        </label>
+                        {% endfor %}
+                        <label class="flex items-center gap-3 p-4 border border-gray-200 cursor-pointer hover:border-black">
+                            <input type="radio" name="address_id" value="new" class="text-black focus:ring-black">
+                            <span class="text-sm font-medium">+ Add New Address</span>
+                        </label>
+                    </div>
+                    {% endif %}
+                    
+                    <div id="new-address-form" class="space-y-4 {% if addresses %}hidden{% endif %}">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <input type="text" name="full_name" placeholder="Full Name" required
+                                   class="px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                            <input type="tel" name="phone" placeholder="Phone Number" required
+                                   class="px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                        </div>
+                        <input type="text" name="address_line1" placeholder="Address Line 1" required
+                               class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                        <input type="text" name="address_line2" placeholder="Address Line 2 (Optional)"
+                               class="w-full px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                            <input type="text" name="city" placeholder="City" required
+                                   class="px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                            <input type="text" name="state" placeholder="State" required
+                                   class="px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                            <input type="text" name="pincode" placeholder="Pincode" maxlength="6" required
+                                   class="px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Payment Method (UI only - Razorpay integration shown) -->
+                <div class="bg-white border border-gray-200 p-6">
+                    <h2 class="font-serif text-xl font-bold mb-4">Payment Method</h2>
+                    
+                    <div class="space-y-3">
+                        <label class="flex items-center gap-3 p-4 border border-gray-200 cursor-pointer hover:border-black">
+                            <input type="radio" name="payment_method" value="razorpay" checked class="text-black focus:ring-black">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium">Razorpay (UPI, Cards, Net Banking, Wallets)</p>
+                                <p class="text-xs text-gray-500 mt-1">Secure payment via Razorpay</p>
+                            </div>
+                        </label>
+                        <label class="flex items-center gap-3 p-4 border border-gray-200 cursor-pointer hover:border-black">
+                            <input type="radio" name="payment_method" value="cod" class="text-black focus:ring-black">
+                            <div class="flex-1">
+                                <p class="text-sm font-medium">Cash on Delivery</p>
+                                <p class="text-xs text-gray-500 mt-1">Pay when your order is delivered</p>
+                            </div>
+                        </label>
+                    </div>
+                    
+                    <div class="mt-4 p-3 bg-blue-50 border border-blue-200 text-xs text-blue-800">
+                        <strong>Note:</strong> Razorpay backend integration is a UI placeholder. Payment gateway will be integrated in the next phase.
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Right: Order Summary -->
+            <div class="lg:col-span-1">
+                <div class="bg-gray-50 border border-gray-200 p-6 lg:sticky lg:top-24">
+                    <h2 class="font-serif text-xl font-bold mb-4">Order Summary</h2>
+                    
+                    <div class="space-y-4 mb-6 max-h-64 overflow-y-auto">
+                        {% for item in cart_items %}
+                        <div class="flex gap-3">
+                           <div class="w-16 h-20 bg-gray-100 flex-shrink-0">
+                                <img src="{{ item.variant.image_url }}" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1 min-w-0">
+                                <p class="text-sm font-medium line-clamp-1">{{ item.variant.product.name }}</p>
+                                <p class="text-xs text-gray-500">{{ item.variant.color }} / {{ item.variant.size }}</p>
+                                <p class="text-xs text-gray-500">Qty: {{ item.quantity }}</p>
+                                <p class="text-sm font-semibold mt-1">₹{{ item.total_price }}</p>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <!-- Coupon -->
+                    <div class="border-t pt-4 mb-4">
+                        <div class="flex gap-2">
+                            <input type="text" id="coupon-input" placeholder="Coupon code"
+                                   class="flex-1 px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                            <button type="button" onclick="applyCoupon()" class="px-4 bg-black text-white text-xs tracking-widest">APPLY</button>
+                        </div>
+                        <p id="coupon-message" class="text-xs mt-2"></p>
+                    </div>
+                    
+                    <div class="border-t pt-4 space-y-2 text-sm">
+                        <div class="flex justify-between"><span>Subtotal</span><span>₹{{ cart.subtotal }}</span></div>
+                        <div class="flex justify-between" id="discount-row" style="display: none;">
+                            <span>Discount</span><span id="discount-amount" class="text-green-600">-₹0</span>
+                        </div>
+                        <div class="flex justify-between"><span>Shipping</span><span class="text-green-600">FREE</span></div>
+                        <div class="flex justify-between font-bold text-lg pt-3 border-t">
+                            <span>Total</span>
+                            <span id="total-amount">₹{{ cart.total }}</span>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" 
+                            class="w-full mt-6 bg-black text-white py-4 text-sm tracking-widest hover:bg-gray-800 transition">
+                        PLACE ORDER
+                    </button>
+                    
+                    <p class="text-xs text-gray-500 text-center mt-3">
+                        By placing this order, you agree to our Terms & Conditions
+                    </p>
+                </div>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Show new address form when "new" is selected
+document.querySelectorAll('input[name="address_id"]').forEach(radio => {
+    radio.addEventListener('change', function() {
+        const form = document.getElementById('new-address-form');
+        if (this.value === 'new') {
+            form.classList.remove('hidden');
+            form.querySelectorAll('input').forEach(i => i.required = true);
+        } else {
+            form.classList.add('hidden');
+            form.querySelectorAll('input').forEach(i => i.required = false);
+        }
+    });
+});
+
+function applyCoupon() {
+    const code = document.getElementById('coupon-input').value.trim();
+    const msg = document.getElementById('coupon-message');
+    
+    fetch('{% url "promotions:apply_coupon" %}', {
+        method: 'POST',
+        headers: {
+            'X-CSRFToken': csrftoken,
+            'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: `code=${code}`
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            msg.textContent = data.message;
+            msg.className = 'text-xs mt-2 text-green-600';
+            document.getElementById('discount-row').style.display = 'flex';
+            document.getElementById('discount-amount').textContent = '-₹' + data.discount;
+            document.getElementById('total-amount').textContent = '₹' + data.new_total;
+        } else {
+            msg.textContent = data.error;
+            msg.className = 'text-xs mt-2 text-red-600';
+        }
+    });
+}
+
+// Handle form submit - UI only (Razorpay backend integration placeholder)
+document.getElementById('checkout-form').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    // In production, this would:
+    // 1. Create order via API
+    // 2. Open Razorpay checkout
+    // 3. On success, verify payment and confirm order
+    
+    const formData = new FormData(this);
+    
+    fetch('{% url "orders:place_order" %}', {
+        method: 'POST',
+        headers: {'X-CSRFToken': csrftoken},
+        body: formData
+    })
+    .then(r => r.json())
+    .then(data => {
+        if (data.success) {
+            // UI-only: skip Razorpay, go straight to confirmation
+            // In production: open Razorpay modal here, then verify
+            window.location.href = data.redirect_url;
+        } else {
+            alert(data.error || 'Failed to place order');
+        }
+    })
+    .catch(err => {
+        alert('An error occurred. Please try again.');
+        console.error(err);
+    });
+});
+</script>
+{% endblock %}

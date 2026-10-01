@@ -1,0 +1,83 @@
+{% extends 'dashboard/base.html' %}
+{% block page_title %}Products{% endblock %}
+
+{% block content %}
+<div class="flex flex-col md:flex-row justify-between md:items-center gap-4 mb-6">
+    <form method="get" class="flex gap-2">
+        <input type="text" name="q" value="{{ request.GET.q|default:'' }}" placeholder="Search by name..."
+               class="px-4 py-3 border border-gray-300 text-sm focus:outline-none focus:border-black">
+        <select name="category" class="px-4 py-3 border border-gray-300 text-sm">
+            <option value="">All categories</option>
+            {% for c in categories %}
+            <option value="{{ c.pk }}" {% if request.GET.category == c.pk|stringformat:'s' %}selected{% endif %}>{{ c.name }}</option>
+            {% endfor %}
+        </select>
+        <button class="bg-black text-white px-4 py-3 text-xs tracking-widest">SEARCH</button>
+    </form>
+    <a href="{% url 'dashboard:product_create' %}"
+       class="bg-black text-white px-5 py-3 text-xs tracking-widest hover:bg-gray-800 transition text-center">
+        + ADD PRODUCT
+    </a>
+</div>
+
+<div class="bg-white rounded border border-gray-200 overflow-hidden">
+    <table class="w-full text-sm">
+        <thead class="bg-gray-50">
+            <tr>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">IMAGE</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">NAME / SKU</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">CATEGORY</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">PRICE</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">STOCK</th>
+                <th class="text-left p-4 text-xs tracking-widest text-gray-500">STATUS</th>
+                <th class="text-right p-4 text-xs tracking-widest text-gray-500">ACTIONS</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in products %}
+            <tr class="border-t border-gray-100 hover:bg-gray-50">
+                <td class="p-4">
+                    <img src="{{ p.main_image_url }}" class="w-12 h-16 object-cover rounded">
+                </td>
+                <td class="p-4">
+                    <p class="font-medium">{{ p.name }}</p>
+                    <p class="text-xs text-gray-400">{{ p.sku }}</p>
+                </td>
+                <td class="p-4 text-gray-600">{{ p.category.name }}</td>
+                <td class="p-4">₹{{ p.price }}</td>
+                <td class="p-4">
+                    {% with total=p.variants.all %}
+                        {% if p.variants.exists %}
+                            <span class="text-xs">
+                                {{ p.variants.count }} variants
+                            </span>
+                        {% else %}
+                            <span class="text-xs text-gray-400">No variants</span>
+                        {% endif %}
+                    {% endwith %}
+                </td>
+                <td class="p-4">
+                    {% if p.is_active %}
+                    <span class="text-xs px-2 py-1 bg-green-100 text-green-800 rounded">Active</span>
+                    {% else %}
+                    <span class="text-xs px-2 py-1 bg-gray-100 text-gray-600 rounded">Inactive</span>
+                    {% endif %}
+                    {% if p.is_featured %}<span class="text-xs px-2 py-1 bg-black text-white rounded ml-1">Featured</span>{% endif %}
+                </td>
+                <td class="p-4 text-right whitespace-nowrap">
+                    <a href="{{ p.get_absolute_url }}" target="_blank" class="text-xs underline text-gray-500">View</a>
+                    <a href="{% url 'dashboard:product_edit' p.pk %}" class="text-xs underline ml-3">Edit</a>
+                    <form method="post" action="{% url 'dashboard:product_delete' p.pk %}" class="inline"
+                          onsubmit="return confirm('Delete {{ p.name }}?')">
+                        {% csrf_token %}
+                        <button class="text-xs underline text-red-600 ml-3">Delete</button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="7" class="p-8 text-center text-gray-500">No products. Click "+ ADD PRODUCT" to get started.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

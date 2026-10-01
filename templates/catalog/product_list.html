@@ -1,0 +1,119 @@
+{% extends 'base.html' %}
+
+{% block title %}Shop All Products - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 py-8 lg:py-12">
+    <div class="mb-8">
+        <h1 class="font-serif text-3xl lg:text-4xl font-bold mb-2">
+            {% if current_filters.category %}Shop {{ current_filters.category|title }}
+            {% elif current_filters.q %}Search Results
+            {% else %}All Products{% endif %}
+        </h1>
+        <p class="text-sm text-gray-500">{{ total_count }} products found</p>
+    </div>
+    
+    <div class="grid grid-cols-1 lg:grid-cols-4 gap-8">
+        <!-- Filters Sidebar -->
+        <aside class="lg:col-span-1" x-data="{ filtersOpen: false }">
+            <button @click="filtersOpen = !filtersOpen" 
+                    class="lg:hidden w-full border border-gray-300 py-3 px-4 text-sm tracking-widest flex justify-between items-center mb-4">
+                <span>FILTERS</span>
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </button>
+            
+            <div :class="filtersOpen ? 'block' : 'hidden lg:block'" class="space-y-6">
+                <form method="get" id="filter-form" hx-get="{% url 'catalog:product_list' %}" 
+                      hx-target="#product-grid" hx-push-url="true" hx-trigger="change">
+                    
+                    <!-- Category Filter -->
+                    <div class="border-b pb-4">
+                        <h3 class="text-sm tracking-widest mb-3">CATEGORY</h3>
+                        <div class="space-y-2">
+                            {% for cat in categories %}
+                            <label class="flex items-center gap-2 text-sm cursor-pointer hover:text-black">
+                                <input type="radio" name="category" value="{{ cat.slug }}" 
+                                       {% if current_filters.category == cat.slug %}checked{% endif %}
+                                       class="text-black focus:ring-black">
+                                <span>{{ cat.name }}</span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Gender Filter -->
+                    <div class="border-b pb-4">
+                        <h3 class="text-sm tracking-widest mb-3">GENDER</h3>
+                        <div class="space-y-2">
+                            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="radio" name="gender" value="M" {% if current_filters.gender == 'M' %}checked{% endif %} class="text-black focus:ring-black">
+                                <span>Men</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="radio" name="gender" value="F" {% if current_filters.gender == 'F' %}checked{% endif %} class="text-black focus:ring-black">
+                                <span>Women</span>
+                            </label>
+                            <label class="flex items-center gap-2 text-sm cursor-pointer">
+                                <input type="radio" name="gender" value="K" {% if current_filters.gender == 'K' %}checked{% endif %} class="text-black focus:ring-black">
+                                <span>Kids</span>
+                            </label>
+                        </div>
+                    </div>
+                    
+                    <!-- Size Filter -->
+                    <div class="border-b pb-4">
+                        <h3 class="text-sm tracking-widest mb-3">SIZE</h3>
+                        <div class="flex flex-wrap gap-2">
+                            {% for s in sizes %}
+                            <label class="cursor-pointer">
+                                <input type="radio" name="size" value="{{ s }}" {% if current_filters.size == s %}checked{% endif %} class="hidden peer">
+                                <span class="inline-block px-3 py-2 border border-gray-300 text-xs peer-checked:bg-black peer-checked:text-white hover:border-black transition">
+                                    {{ s }}
+                                </span>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+                    
+                    <!-- Price Filter -->
+                    <div class="border-b pb-4">
+                        <h3 class="text-sm tracking-widest mb-3">PRICE</h3>
+                        <div class="flex gap-2">
+                            <input type="number" name="min_price" placeholder="Min" value="{{ current_filters.min_price }}"
+                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                            <input type="number" name="max_price" placeholder="Max" value="{{ current_filters.max_price }}"
+                                   class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                        </div>
+                    </div>
+                    
+                    <!-- Sort -->
+                    <div>
+                        <h3 class="text-sm tracking-widest mb-3">SORT BY</h3>
+                        <select name="sort" class="w-full px-3 py-2 border border-gray-300 text-sm focus:outline-none focus:border-black">
+                            <option value="-created_at" {% if current_filters.sort == '-created_at' %}selected{% endif %}>Newest</option>
+                            <option value="price" {% if current_filters.sort == 'price' %}selected{% endif %}>Price: Low to High</option>
+                            <option value="-price" {% if current_filters.sort == '-price' %}selected{% endif %}>Price: High to Low</option>
+                            <option value="rating" {% if current_filters.sort == 'rating' %}selected{% endif %}>Top Rated</option>
+                            <option value="popularity" {% if current_filters.sort == 'popularity' %}selected{% endif %}>Popularity</option>
+                        </select>
+                    </div>
+                    
+                    <input type="hidden" name="q" value="{{ current_filters.q }}">
+                    
+                    <button type="button" onclick="document.getElementById('filter-form').reset(); this.form.submit()" 
+                            class="w-full mt-4 text-sm text-gray-500 hover:text-black underline">
+                        Clear all filters
+                    </button>
+                </form>
+            </div>
+        </aside>
+        
+        <!-- Product Grid -->
+        <div class="lg:col-span-3" id="product-grid">
+            {% include 'catalog/partials/product_grid.html' %}
+        </div>
+    </div>
+</div>
+{% endblock %}

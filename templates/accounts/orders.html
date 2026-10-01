@@ -1,0 +1,12 @@
+{% extends 'base.html' %}
+
+{% block title %}My Orders - HAYAH MIZAN{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl mx-auto px-4 py-12">
+    <h1 class="font-serif text-3xl font-bold mb-8">My Orders</h1>
+    <p class="text-sm text-gray-500">
+        View your full order history on the <a href="{% url 'orders:list' %}" class="underline hover:text-black">Orders page</a>.
+    </p>
+</div>
+{% endblock %}

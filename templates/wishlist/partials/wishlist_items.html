@@ -1,0 +1,45 @@
+<div class="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+    {% for item in items %}
+    <div class="group relative" id="wishlist-item-{{ item.product.id }}">
+        <a href="{{ item.product.get_absolute_url }}" class="block relative aspect-[3/4] overflow-hidden bg-gray-100">
+            <img src="{{ item.product.main_image_url }}" alt="{{ item.product.name }}" loading="lazy"
+                 class="w-full h-full object-cover group-hover:scale-105 transition duration-500">
+
+            {% if item.product.discount_percentage > 0 %}
+            <span class="absolute top-3 left-3 bg-red-600 text-white text-[10px] tracking-widest px-2 py-1">
+                -{{ item.product.discount_percentage }}%
+            </span>
+            {% endif %}
+        </a>
+
+        <!-- Remove from wishlist button -->
+        <button hx-post="{% url 'wishlist:remove' item.product.id %}"
+                hx-target="#wishlist-container"
+                hx-swap="innerHTML"
+                hx-confirm="Remove this item from your wishlist?"
+                class="absolute top-3 right-3 w-9 h-9 bg-white rounded-full flex items-center justify-center shadow-md hover:bg-red-50 transition z-10"
+                title="Remove from wishlist">
+            <svg class="w-4 h-4 text-red-500" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+            </svg>
+        </button>
+
+        <div class="mt-4">
+            <p class="text-xs text-gray-500 tracking-wider mb-1">
+                {{ item.product.brand.name|default:"HAYAH MIZAN" }}
+            </p>
+            <h3 class="text-sm font-medium mb-2 line-clamp-1">
+                <a href="{{ item.product.get_absolute_url }}" class="hover:text-gray-600">
+                    {{ item.product.name }}
+                </a>
+            </h3>
+            <div class="flex items-center gap-2">
+                <span class="font-semibold">₹{{ item.product.price }}</span>
+                {% if item.product.compare_at_price and item.product.compare_at_price > item.product.price %}
+                <span class="text-sm text-gray-400 line-through">₹{{ item.product.compare_at_price }}</span>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
